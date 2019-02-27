@@ -1,5 +1,6 @@
 const assert = require('assert');
 const { readdirSync, readFileSync, existsSync } = require('fs');
+const { copy } = require('fs-extra');
 const { join } = require('path');
 const glob = require('glob');
 
@@ -10,6 +11,11 @@ function noop(content) {
 function assertBuildResult({ cwd, replaceContent = noop }) {
   const actualDir = join(cwd, 'dist');
   const expectDir = join(cwd, 'expected');
+
+  if (existsSync(actualDir) && !existsSync(expectDir)) {
+    copy(actualDir, expectDir);
+    return;
+  }
 
   const actualFiles = glob.sync('**/*', { cwd: actualDir, nodir: true });
   const expectFiles = glob.sync('**/*', { cwd: actualDir, nodir: true });
