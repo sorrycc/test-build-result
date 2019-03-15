@@ -25,7 +25,7 @@ function assertBuildResult({ cwd, replaceContent = noop }) {
   actualFiles.forEach(file => {
     const actualFile = readFileSync(join(actualDir, file), 'utf-8');
     const expectFile = readFileSync(join(expectDir, file), 'utf-8');
-    expect(replaceContent(actualFile).trim()).toEqual(expectFile.trim());
+    expect(replaceContent(actualFile).trim()).toEqual(replaceContent(expectFile).trim());
   });
 }
 
