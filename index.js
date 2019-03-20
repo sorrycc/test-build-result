@@ -8,7 +8,7 @@ function noop(content) {
   return content;
 }
 
-function assertBuildResult({ cwd, replaceContent = noop }) {
+function assertBuildResult({ cwd, replaceContent = noop, testExists }) {
   const actualDir = join(cwd, 'dist');
   const expectDir = join(cwd, 'expected');
 
@@ -23,13 +23,17 @@ function assertBuildResult({ cwd, replaceContent = noop }) {
   expect(actualFiles.length).toEqual(expectFiles.length);
 
   actualFiles.forEach(file => {
-    const actualFile = readFileSync(join(actualDir, file), 'utf-8');
-    const expectFile = readFileSync(join(expectDir, file), 'utf-8');
-    expect(replaceContent(actualFile).trim()).toEqual(replaceContent(expectFile).trim());
+    if (testExists) {
+      expect(existsSync(join(expectDir, file))).toEqual(true);
+    } else {
+      const actualFile = readFileSync(join(actualDir, file), 'utf-8');
+      const expectFile = readFileSync(join(expectDir, file), 'utf-8');
+      expect(replaceContent(actualFile).trim()).toEqual(replaceContent(expectFile).trim());
+    }
   });
 }
 
-function test({ root, build, replaceContent }) {
+function test({ root, build, replaceContent, testExists }) {
   assert(root && build, `Invalid arguments`);
   assert(existsSync(root), `root (${root}) not exists`);
 
@@ -42,7 +46,7 @@ function test({ root, build, replaceContent }) {
         build({ cwd, dir })
           .then(() => {
             try {
-              assertBuildResult({ cwd, replaceContent });
+              assertBuildResult({ cwd, replaceContent, testExists });
               done();
             } catch (e) {
               done(e);
